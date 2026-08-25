@@ -83,6 +83,17 @@
 .delete-button:hover {
   background: #f3efeb;
   opacity: 1;
+} 
+.post-link {
+  display: block;
+  margin: 8px 0 12px;
+  color: #7a6f66;
+  font-size: 13px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.post-link:hover {
+  text-decoration: underline;
 }
     #message {
       margin-top: 12px;
@@ -248,6 +259,12 @@ function renumberPosts() {
     const number = document.createElement("div");
     number.className = "post-number";
     number.textContent = "POST " + postCount;
+    const postLink = document.createElement("a");
+postLink.href = url;
+postLink.textContent = url;
+postLink.target = "_blank";
+postLink.rel = "noopener noreferrer";
+postLink.className = "post-link";
 const deleteButton = document.createElement("button");
 deleteButton.className = "delete-button";
 deleteButton.textContent = "削除";
@@ -260,6 +277,7 @@ deleteButton.addEventListener("click", function () {
     slot.className = "tweet-slot";
 
     card.appendChild(number);
+    card.appendChild(postLink);
     card.appendChild(deleteButton);
     card.appendChild(slot);
     posts.appendChild(card);
