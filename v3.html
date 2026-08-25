@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>House Of Rain | X Post Check v3</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f5f3ef;
+      color: #201d1a;
+      font-family: Arial, "Yu Gothic", sans-serif;
+    }
+
+    main {
+      width: min(900px, 94vw);
+      margin: 32px auto 64px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 8px;
+    }
+
+    .description {
+      color: #6f675f;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .control-panel {
+      background: #ffffff;
+      border: 1px solid #ded8d2;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 16px;
+      border: 1px solid #d6cfc8;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 22px;
+      background: #201d1a;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    #message {
+      margin-top: 12px;
+      color: #6f675f;
+      font-size: 14px;
+    }
+
+    #posts {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .post-card {
+      background: #ffffff;
+      border: 1px solid #ded8d2;
+      border-radius: 14px;
+      padding: 24px 16px;
+      min-height: 120px;
+    }
+
+    .post-number {
+      width: min(550px, 100%);
+      margin: 0 auto 12px;
+      color: #8a8179;
+      font-size: 13px;
+    }
+
+    .tweet-slot {
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 650px) {
+      .input-row {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<main>
+
+  <h1>House Of Rain | X Post Check</h1>
+
+  <p class="description">
+    Xの公開投稿URLを追加して、複数の投稿を続けて確認するためのページです。
+  </p>
+
+  <section class="control-panel">
+
+    <label for="postUrl">X 投稿URL</label>
+
+    <div class="input-row">
+      <input
+        id="postUrl"
+        type="url"
+        placeholder="https://x.com/.../status/..."
+        autocomplete="off"
+      >
+
+      <button id="addButton" type="button">
+        投稿を追加
+      </button>
+    </div>
+
+    <div id="message">
+      URLを1件ずつ追加してください。
+    </div>
+
+  </section>
+
+  <section id="posts"></section>
+
+</main>
+
+<script
+  async
+  src="https://platform.x.com/widgets.js"
+  charset="utf-8">
+</script>
+
+<script>
+  const input = document.getElementById("postUrl");
+  const button = document.getElementById("addButton");
+  const posts = document.getElementById("posts");
+  const message = document.getElementById("message");
+
+  let postCount = 0;
+
+  function getPostId(url) {
+    try {
+      const parsedUrl = new URL(url.trim());
+
+      if (
+        parsedUrl.hostname !== "x.com" &&
+        parsedUrl.hostname !== "www.x.com" &&
+        parsedUrl.hostname !== "twitter.com" &&
+        parsedUrl.hostname !== "www.twitter.com"
+      ) {
+        return null;
+      }
+
+      const match = parsedUrl.pathname.match(/\/status\/(\d+)/);
+
+      return match ? match[1] : null;
+
+    } catch {
+      return null;
+    }
+  }
+
+  function waitForTwitterWidgets(callback, attempts = 0) {
+    if (
+      window.twttr &&
+      window.twttr.widgets
+    ) {
+      callback();
+      return;
+    }
+
+    if (attempts >= 20) {
+      message.textContent =
+        "Xの表示機能を読み込めませんでした。ページを再読み込みしてください。";
+      return;
+    }
+
+    setTimeout(function () {
+      waitForTwitterWidgets(callback, attempts + 1);
+    }, 250);
+  }
+
+  function addPost() {
+    const url = input.value.trim();
+    const postId = getPostId(url);
+
+    if (!postId) {
+      message.textContent =
+        "Xの公開投稿URLを確認してください。";
+      return;
+    }
+
+    postCount += 1;
+
+    const card = document.createElement("article");
+    card.className = "post-card";
+
+    const number = document.createElement("div");
+    number.className = "post-number";
+    number.textContent = "POST " + postCount;
+
+    const slot = document.createElement("div");
+    slot.className = "tweet-slot";
+
+    card.appendChild(number);
+    card.appendChild(slot);
+    posts.appendChild(card);
+
+    message.textContent =
+      "投稿を読み込んでいます…";
+
+    input.value = "";
+
+    waitForTwitterWidgets(function () {
+
+      window.twttr.widgets.createTweet(
+        postId,
+        slot,
+        {
+          theme: "light",
+          align: "center"
+        }
+      ).then(function (element) {
+
+        if (element) {
+          message.textContent =
+            "投稿を追加しました。次のURLを入力できます。";
+        } else {
+          message.textContent =
+            "この投稿を表示できませんでした。";
+        }
+
+      }).catch(function () {
+        message.textContent =
+          "投稿の読み込み中にエラーが発生しました。";
+      });
+
+    });
+  }
+
+  button.addEventListener("click", addPost);
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      addPost();
+    }
+  });
+</script>
+
+</body>
+</html>
