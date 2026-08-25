@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>House Of Rain | X Post Check v2</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f5f3ef;
+      color: #201d1a;
+      font-family: Arial, "Yu Gothic", sans-serif;
+    }
+
+    main {
+      width: min(760px, 94vw);
+      margin: 32px auto 64px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 8px;
+    }
+
+    .description {
+      color: #6f6963;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .control {
+      padding: 18px;
+      background: white;
+      border: 1px solid #ded8d2;
+      border-radius: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid #cfc8c1;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 9px;
+      background: #201d1a;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .message {
+      min-height: 1.5em;
+      margin: 10px 0 0;
+      color: #8a3b32;
+      font-size: 14px;
+    }
+
+    .panel {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      background: white;
+      border: 1px solid #ded8d2;
+      border-radius: 14px;
+    }
+
+    #tweet {
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 600px) {
+      .input-row {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<main>
+
+  <h1>House Of Rain | X Post Check</h1>
+
+  <p class="description">
+    Xの公開投稿URLを貼り付けて、投稿を確認するためのページです。
+  </p>
+
+  <div class="control">
+
+    <label for="postUrl">X 投稿URL</label>
+
+    <div class="input-row">
+      <input
+        id="postUrl"
+        type="url"
+        placeholder="https://x.com/.../status/..."
+      >
+
+      <button id="showButton" type="button">
+        表示する
+      </button>
+    </div>
+
+    <p id="message" class="message"></p>
+
+  </div>
+
+  <div id="panel" class="panel">
+    <div id="tweet"></div>
+  </div>
+
+</main>
+
+<script
+  async
+  src="https://platform.x.com/widgets.js"
+  charset="utf-8">
+</script>
+
+<script>
+  const input = document.getElementById("postUrl");
+  const button = document.getElementById("showButton");
+  const tweet = document.getElementById("tweet");
+  const panel = document.getElementById("panel");
+  const message = document.getElementById("message");
+
+  function showPost() {
+    const url = input.value.trim();
+
+    message.textContent = "";
+
+    const match = url.match(
+      /(?:x\.com|twitter\.com)\/[^/]+\/status\/(\d+)/
+    );
+
+    if (!match) {
+      message.textContent =
+        "Xの投稿URLを貼り付けてください。";
+      return;
+    }
+
+    const postId = match[1];
+
+    tweet.innerHTML = "";
+    panel.style.display = "block";
+
+    if (
+      window.twttr &&
+      window.twttr.widgets
+    ) {
+      window.twttr.widgets.createTweet(
+        postId,
+        tweet,
+        {
+          theme: "light",
+          align: "center"
+        }
+      );
+    } else {
+      message.textContent =
+        "Xの表示機能を読み込み中です。数秒後にもう一度「表示する」を押してください。";
+    }
+  }
+
+  button.addEventListener("click", showPost);
+
+  input.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      showPost();
+    }
+  });
+</script>
+
+</body>
+</html>
