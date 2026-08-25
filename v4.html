@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>House Of Rain | X Post Check v3</title>
+  <title>House Of Rain | X Post Check v4</title>
 
   <style>
     body {
@@ -72,7 +72,18 @@
     button:hover {
       opacity: 0.85;
     }
+.delete-button {
+  background: transparent;
+  color: #7a6f66;
+  border: 1px solid #d6cfc8;
+  padding: 8px 12px;
+  font-size: 13px;
+}
 
+.delete-button:hover {
+  background: #f3efeb;
+  opacity: 1;
+}
     #message {
       margin-top: 12px;
       color: #6f675f;
@@ -228,11 +239,18 @@
     const number = document.createElement("div");
     number.className = "post-number";
     number.textContent = "POST " + postCount;
+const deleteButton = document.createElement("button");
+deleteButton.className = "delete-button";
+deleteButton.textContent = "削除";
 
+deleteButton.addEventListener("click", function () {
+  card.remove();
+});
     const slot = document.createElement("div");
     slot.className = "tweet-slot";
 
     card.appendChild(number);
+    card.appendChild(deleteButton);
     card.appendChild(slot);
     posts.appendChild(card);
 
